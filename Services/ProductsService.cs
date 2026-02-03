@@ -1,4 +1,6 @@
 ﻿using FakeStoreProxyApi.Models;
+using Microsoft.AspNetCore.Http.Features;
+using System.Net;
 
 namespace FakeStoreProxyApi.Services;
 
@@ -6,12 +8,23 @@ public class ProductsService(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
-    public async Task<List<Product>> GetByCategoryAsync(string category, CancellationToken ct)
+    public async Task<PagedResponse<Product>> GetByCategoryAsync(
+        string category,
+        int page = 1,
+        int pageSize = 10,
+        CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(category))
+            throw new ArgumentNullException(nameof(category), "category is required");
+
+        if (page < 1)
+            throw new ArgumentException(nameof(page), "page must be grater than, or equals 1");
+
+        if (pageSize < 1)
+            throw new ArgumentException(nameof(pageSize), "pageSize must be  grater than, or equals 1");
+
+
         var trimmedCategory = category.Trim();
-        if (string.IsNullOrWhiteSpace(category)) throw new ArgumentNullException(nameof(category), "category is required");
-
-
         var encodedCategory = Uri.EscapeDataString(trimmedCategory);
 
         string url = $"products/category/{encodedCategory}";
@@ -20,13 +33,31 @@ public class ProductsService(HttpClient httpClient)
         if ((int)res.StatusCode >= 500)
             throw new HttpRequestException($"Provider error: {(int)res.StatusCode}");
 
-        if (res.StatusCode == System.Net.HttpStatusCode.NotFound)
-            return new List<Product>();
+        if (res.StatusCode == HttpStatusCode.NotFound)
+            return new PagedResponse<Product>
+            {
+                Items = new List<Product>(),
+                Pagination = new PaginationMetadata(0, page, pageSize)
+            };
+        
 
         res.EnsureSuccessStatusCode();
 
-        var json = await res.Content.ReadFromJsonAsync<List<Product>>(cancellationToken: ct);
+        var all = await res.Content.ReadFromJsonAsync<List<Product>>(cancellationToken: ct)
+            ?? new List<Product>();
 
-        return json ?? new List<Product>();
+        var totalItems = all.Count;
+
+        var items = all
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResponse<Product>
+        {
+            Items = items,
+            Pagination = new PaginationMetadata(totalItems, page, pageSize)
+        };
+
     }
 }

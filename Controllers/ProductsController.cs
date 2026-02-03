@@ -11,12 +11,16 @@ public class ProductsController(ProductsService productsService) : ControllerBas
     private readonly ProductsService _productsService = productsService;
 
     [HttpGet]
-    public async Task<ActionResult<List<Product>>> GetByCategory([FromQuery] string category, CancellationToken ct)
+    public async Task<ActionResult<List<Product>>> GetByCategory(
+        [FromQuery] string category,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken ct = default)
     {
      
-        var products = await _productsService.GetByCategoryAsync(category, ct);
+        var products = await _productsService.GetByCategoryAsync(category, page, pageSize, ct);
 
-        if (products.Count == 0)
+        if (products.Items.Count == 0)
             return NoContent();
 
         return Ok(products);

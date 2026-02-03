@@ -13,7 +13,12 @@ public class ProductsController(ProductsService productsService) : ControllerBas
     [HttpGet]
     public async Task<ActionResult<List<Product>>> GetByCategory([FromQuery] string category, CancellationToken ct)
     {
+     
         var products = await _productsService.GetByCategoryAsync(category, ct);
+
+        if (products.Count == 0)
+            return NoContent();
+
         return Ok(products);
     }
 }

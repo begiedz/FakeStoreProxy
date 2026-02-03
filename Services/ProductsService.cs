@@ -8,7 +8,13 @@ public class ProductsService(HttpClient httpClient)
 
     public async Task<List<Product>> GetByCategoryAsync(string category, CancellationToken ct)
     {
-        string url = $"products/category/{category}";
+        var trimmedCategory = category.Trim();
+        if (string.IsNullOrWhiteSpace(category)) throw new ArgumentNullException(nameof(category), "category is required");
+
+
+        var encodedCategory = Uri.EscapeDataString(trimmedCategory);
+
+        string url = $"products/categoryy/{encodedCategory}";
         var res = await _httpClient.GetAsync(url, ct);
 
         if ((int)res.StatusCode >= 500)
@@ -19,8 +25,8 @@ public class ProductsService(HttpClient httpClient)
 
         res.EnsureSuccessStatusCode();
 
-        var json = await res.Content.ReadFromJsonAsync<List<Product>>(ct);
+        var json = await res.Content.ReadFromJsonAsync<List<Product>>(cancellationToken: ct);
 
-        return json!;
+        return json ?? new List<Product>();
     }
 }

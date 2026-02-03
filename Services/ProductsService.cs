@@ -14,7 +14,7 @@ public class ProductsService(HttpClient httpClient)
 
         var encodedCategory = Uri.EscapeDataString(trimmedCategory);
 
-        string url = $"products/categoryy/{encodedCategory}";
+        string url = $"products/category/{encodedCategory}";
         var res = await _httpClient.GetAsync(url, ct);
 
         if ((int)res.StatusCode >= 500)

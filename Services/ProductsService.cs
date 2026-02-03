@@ -6,9 +6,9 @@ public class ProductsService(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
-    public async Task<List<Product>> GetByCategoryAsync(CancellationToken ct)
+    public async Task<List<Product>> GetByCategoryAsync(string category, CancellationToken ct)
     {
-        string url = "products/";
+        string url = $"products/category/{category}";
         var res = await _httpClient.GetAsync(url, ct);
 
         if ((int)res.StatusCode >= 500)

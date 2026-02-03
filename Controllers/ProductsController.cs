@@ -11,9 +11,9 @@ public class ProductsController(ProductsService productsService) : ControllerBas
     private readonly ProductsService _productsService = productsService;
 
     [HttpGet]
-    public async Task<ActionResult<List<Product>>> GetByCategory(CancellationToken ct)
+    public async Task<ActionResult<List<Product>>> GetByCategory([FromQuery] string category, CancellationToken ct)
     {
-        var products = await _productsService.GetByCategoryAsync(ct);
+        var products = await _productsService.GetByCategoryAsync(category, ct);
         return Ok(products);
     }
 }

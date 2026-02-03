@@ -5,8 +5,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddHttpClient();
-builder.Services.AddScoped<ProductsService>();
+
+var baseUrl = builder.Configuration.GetValue<string>("FakeStore:BaseUrl");
+var timeoutSeconds = builder.Configuration.GetValue<int>("FakeStore:TimeoutSeconds");
+
+builder.Services.AddHttpClient<ProductsService>(client =>
+{
+    client.BaseAddress = new Uri(baseUrl!);
+    client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+
+});
+
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();

@@ -6,10 +6,10 @@ public class ProductsService(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
-    public async Task<List<Product>> GetByCategoryAsync()
+    public async Task<List<Product>> GetByCategoryAsync(CancellationToken ct)
     {
-        string url = "https://fakestoreapi.com/products/";
-        var res = await _httpClient.GetAsync(url);
+        string url = "products/";
+        var res = await _httpClient.GetAsync(url, ct);
 
         if ((int)res.StatusCode >= 500)
             throw new HttpRequestException($"Provider error: {(int)res.StatusCode}");
@@ -19,7 +19,7 @@ public class ProductsService(HttpClient httpClient)
 
         res.EnsureSuccessStatusCode();
 
-        var json = await res.Content.ReadFromJsonAsync<List<Product>>();
+        var json = await res.Content.ReadFromJsonAsync<List<Product>>(ct);
 
         return json!;
     }

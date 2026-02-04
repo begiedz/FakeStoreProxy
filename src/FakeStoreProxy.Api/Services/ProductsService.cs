@@ -112,7 +112,7 @@ public class ProductsService(HttpClient httpClient) : IProductsService
         if (page < 1)
             throw new ArgumentException("page must be greater than or equal to 1.", nameof(page));
 
-        if (pageSize < 1 || pageSize > 20 )
+        if (pageSize < 1 || pageSize >= 20 )
             throw new ArgumentException("pageSize must be between 1 and 20.", nameof(pageSize));
     }
 }

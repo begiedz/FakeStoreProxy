@@ -33,8 +33,6 @@ public class ProductsController(IProductsService productsService) : ControllerBa
         {
             var products = await _productsService.GetByNameAsync(request.Name, request.Page, request.PageSize, ct);
 
-            if (products.Items.Count == 0) return NoContent();
-
             return Ok(products);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)

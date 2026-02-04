@@ -35,8 +35,6 @@ public class CategoriesController(IProductsService productsService) : Controller
         {
             var products = await _productsService.GetByCategoryAsync(route.Category, pagination.Page, pagination.PageSize, ct);
 
-            if (products.Items.Count == 0) return NoContent();
-
             return Ok(products);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)

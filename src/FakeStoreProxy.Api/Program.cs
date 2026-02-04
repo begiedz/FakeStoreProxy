@@ -1,4 +1,5 @@
-using FakeStoreProxyApi.Services;
+using FakeStoreProxy.Api.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +12,9 @@ var baseUrl = builder.Configuration.GetValue<string?>("FakeStore:BaseUrl")
 var timeoutSeconds = builder.Configuration.GetValue<int?>("FakeStore:TimeoutSeconds")
     ?? 10;
 
-builder.Services.AddHttpClient<ProductsService>(client =>
+builder.Services.AddHttpClient<IProductsService, ProductsService>(client =>
 {
-    client.BaseAddress = new Uri(baseUrl!);
+    client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
 });
@@ -22,11 +23,16 @@ builder.Services.AddHttpClient<ProductsService>(client =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Pulls /// XML docs into Swagger
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 
 // Swagger UI enabled in production for presentation reasons.
 app.MapOpenApi();

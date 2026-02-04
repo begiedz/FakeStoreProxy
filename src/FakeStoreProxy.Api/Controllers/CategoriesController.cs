@@ -1,4 +1,4 @@
-using FakeStoreProxy.Api.Requests;
+﻿using FakeStoreProxy.Api.Requests;
 using FakeStoreProxy.Api.Models;
 using FakeStoreProxy.Api.Services;
 using FakeStoreProxy.Api.Helpers;
@@ -6,32 +6,34 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FakeStoreProxy.Api.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class ProductsController(IProductsService productsService) : ControllerBase
+[ApiController]
+public class CategoriesController(IProductsService productsService) : ControllerBase
 {
     private readonly IProductsService _productsService = productsService;
 
-
     /// <summary>
-    /// Searches products by name (case-insensitive) and returns a paged response.
+    /// Returns products from a given category (paged).
     /// </summary>
-    /// <param name="request">Query params: name, page, pageSize.</param>
+    /// <param name="route">Route params: category.</param>
+    /// <param name="pagination">Query params: page, pageSize.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>Paged list of matching products.</returns>
-    [HttpGet]
+    /// <returns>Paged list of products.</returns>
+    [HttpGet("{Category}/products")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(PagedResponse<Product>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status504GatewayTimeout)]
-    public async Task<ActionResult<PagedResponse<Product>>> GetByName(
-    [FromQuery] GetProductsByNameRequest request,
-    CancellationToken ct = default)
+    public async Task<ActionResult<PagedResponse<Product>>> GetByCategory(
+      [FromRoute] GetProductByCategoryRoute route,
+      [FromQuery] PaginationRequest pagination,
+      CancellationToken ct = default)
     {
+
         try
         {
-            var products = await _productsService.GetByNameAsync(request.Name, request.Page, request.PageSize, ct);
+            var products = await _productsService.GetByCategoryAsync(route.Category, pagination.Page, pagination.PageSize, ct);
 
             if (products.Items.Count == 0) return NoContent();
 
@@ -42,4 +44,5 @@ public class ProductsController(IProductsService productsService) : ControllerBa
             return this.HandleUpstream(ex);
         }
     }
+
 }

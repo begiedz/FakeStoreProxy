@@ -1,10 +1,9 @@
-﻿using FakeStoreProxyApi.Models;
-using Microsoft.AspNetCore.Http.Features;
+﻿using FakeStoreProxy.Api.Models;
 using System.Net;
 
-namespace FakeStoreProxyApi.Services;
+namespace FakeStoreProxy.Api.Services;
 
-public class ProductsService(HttpClient httpClient)
+public class ProductsService(HttpClient httpClient) : IProductsService
 {
     private readonly HttpClient _httpClient = httpClient;
 
@@ -15,20 +14,16 @@ public class ProductsService(HttpClient httpClient)
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(category))
-            throw new ArgumentNullException(nameof(category), "category is required");
+            throw new ArgumentNullException(nameof(category), "category is required.");
 
-        if (page < 1)
-            throw new ArgumentException(nameof(page), "page must be grater than, or equals 1");
+        ValidatePagination(page, pageSize);
 
-        if (pageSize < 1)
-            throw new ArgumentException(nameof(pageSize), "pageSize must be  grater than, or equals 1");
-
-
-        var trimmedCategory = category.Trim();
-        var encodedCategory = Uri.EscapeDataString(trimmedCategory);
+        var normalizedCategory = category.Trim().ToLower();
+        var encodedCategory = Uri.EscapeDataString(normalizedCategory);
 
         string url = $"products/category/{encodedCategory}";
-        var res = await _httpClient.GetAsync(url, ct);
+        using var res = await _httpClient.GetAsync(url, ct);
+
 
         if ((int)res.StatusCode >= 500)
             throw new HttpRequestException($"Provider error: {(int)res.StatusCode}");
@@ -39,7 +34,7 @@ public class ProductsService(HttpClient httpClient)
                 Items = new List<Product>(),
                 Pagination = new PaginationMetadata(0, page, pageSize)
             };
-        
+
 
         res.EnsureSuccessStatusCode();
 
@@ -68,18 +63,13 @@ public class ProductsService(HttpClient httpClient)
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentNullException(nameof(name), "name is required");
+            throw new ArgumentNullException(nameof(name), "name is required.");
 
-        if (page < 1)
-            throw new ArgumentException(nameof(page), "page must be grater than, or equals 1");
-
-        if (pageSize < 1)
-            throw new ArgumentException(nameof(pageSize), "pageSize must be  grater than, or equals 1");
-
+        ValidatePagination(page, pageSize);
 
         string url = $"products/";
 
-        var res = await _httpClient.GetAsync(url, ct);
+        using var res = await _httpClient.GetAsync(url, ct);
 
         if ((int)res.StatusCode >= 500)
             throw new HttpRequestException($"Provider error: {(int)res.StatusCode}");
@@ -96,16 +86,33 @@ public class ProductsService(HttpClient httpClient)
         var all = await res.Content.ReadFromJsonAsync<List<Product>>(cancellationToken: ct)
             ?? new List<Product>();
 
+        var trimmedName = name.Trim();
+
         var filtered = all
-            .Where(p => p.Title.Contains(name.Trim()))
+            .Where(p => p.Title.Contains(trimmedName, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         var totalItems = filtered.Count;
 
-        return new PagedResponse<Product> 
+        var items = filtered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+
+        return new PagedResponse<Product>
         {
-            Items = filtered,
+            Items = items,
             Pagination = new PaginationMetadata(totalItems, page, pageSize)
         };
+    }
+
+    private static void ValidatePagination(int page, int pageSize)
+    {
+        if (page < 1)
+            throw new ArgumentException("page must be greater than or equal to 1.", nameof(page));
+
+        if (pageSize < 1 || pageSize > 20)
+            throw new ArgumentException("pageSize must be between 1 and 20.", nameof(pageSize));
     }
 }

@@ -3,7 +3,7 @@ using FakeStoreProxy.Api.Models;
 using FakeStoreProxy.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FakeStoreProxyApi.Controllers;
+namespace FakeStoreProxy.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

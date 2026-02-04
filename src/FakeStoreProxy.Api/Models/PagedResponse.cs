@@ -1,4 +1,4 @@
-﻿namespace FakeStoreProxyApi.Models;
+﻿namespace FakeStoreProxy.Api.Models;
 
 public sealed class PagedResponse<T>
 {

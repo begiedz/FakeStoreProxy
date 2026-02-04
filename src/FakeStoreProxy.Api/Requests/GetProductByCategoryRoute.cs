@@ -2,7 +2,7 @@
 
 namespace FakeStoreProxy.Api.Requests;
 
-public class GetProductByCategoryRequest: PaginationRequest
+public class GetProductByCategoryRoute
 {
     [Required]
     [MinLength(1)]

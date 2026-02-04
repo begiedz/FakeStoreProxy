@@ -1,8 +1,7 @@
-﻿using FakeStoreProxyApi.Models;
-using Microsoft.AspNetCore.Http.Features;
+﻿using FakeStoreProxy.Api.Models;
 using System.Net;
 
-namespace FakeStoreProxyApi.Services;
+namespace FakeStoreProxy.Api.Services;
 
 public class ProductsService(HttpClient httpClient)
 {
@@ -29,6 +28,7 @@ public class ProductsService(HttpClient httpClient)
 
         string url = $"products/category/{encodedCategory}";
         var res = await _httpClient.GetAsync(url, ct);
+        
 
         if ((int)res.StatusCode >= 500)
             throw new HttpRequestException($"Provider error: {(int)res.StatusCode}");

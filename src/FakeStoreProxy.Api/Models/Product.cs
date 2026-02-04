@@ -1,4 +1,4 @@
-﻿namespace FakeStoreProxyApi.Models;
+﻿namespace FakeStoreProxy.Api.Models;
 
 public record Rating(decimal Rate, int Count);
 

@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
   <Project Path="src/FakeStoreProxy.Api/FakeStoreProxy.Api.csproj" />
   <Project Path="tests/FakeStoreProxy.Tests/FakeStoreProxy.Tests.csproj" />
 </Solution>

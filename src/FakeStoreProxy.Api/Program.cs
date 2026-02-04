@@ -1,4 +1,4 @@
-using FakeStoreProxyApi.Services;
+using FakeStoreProxy.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
